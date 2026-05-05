@@ -1,27 +1,96 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng Nhập - Ngọc Rồng Online</title>
-  <style>
-    body {font-family: Arial, sans-serif; background: #04142b; color: #cde4ff; margin:0; padding:20px; min-height:100vh; display:flex; align-items:center; justify-content:center;}
-    .box {background: rgba(10,79,163,0.3); border:1px solid #4db8ff; border-radius:16px; padding:40px; max-width:420px; width:100%; box-shadow:0 0 30px rgba(77,184,255,0.4);}
-    input {width:100%; padding:14px; margin:10px 0; background:rgba(255,255,255,0.1); border:1px solid #4db8ff; border-radius:8px; color:white;}
-    button {width:100%; padding:15px; background:linear-gradient(90deg,#0a4fa3,#1e7ee8); color:white; border:none; border-radius:8px; font-size:17px; font-weight:bold; margin-top:15px;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Ngọc Rồng</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #04142b; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .box { background: rgba(10, 79, 163, 0.15); border: 1px solid #4db8ff; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 25px rgba(77, 184, 255, 0.2); }
+        h2 { color: #4db8ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; background: rgba(0, 0, 0, 0.4); border: 1px solid #4db8ff; border-radius: 10px; color: white; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: #fff; box-shadow: 0 0 10px #4db8ff; }
+        button { width: 100%; padding: 15px; background: linear-gradient(90deg, #0a4fa3, #1e7ee8); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 126, 232, 0.4); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
 <div class="box">
-  <h2>🔑 ĐĂNG NHẬP</h2>
-  
-  <form action="https://nro1999.online/sv4/dangnhap.php" method="POST">
-    <input type="text" name="username" placeholder="Tên đăng nhập" required>
-    <input type="password" name="password" placeholder="Mật khẩu" required>
-    <button type="submit">Đăng Nhập</button>
-  </form>
+    <h2>🔑 ĐĂNG NHẬP</h2>
+    <div id="loginForm">
+        <input type="text" id="username" placeholder="Tên đăng nhập" autocomplete="off">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button type="button" onclick="handleLogin()" id="btnSubmit">ĐĂNG NHẬP NGAY</button>
+    </div>
 </div>
+
+<script>
+    async function handleLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const btn = document.getElementById('btnSubmit');
+
+        if (!u || !p) {
+            Swal.fire('Lỗi', 'Vui lòng nhập đủ tài khoản, mật khẩu!', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'ĐANG XỬ LÝ...';
+
+        // Đây là "Tiến trình ẩn" lách qua lỗi CORS bằng corsproxy.io
+        const targetUrl = 'https://nro1999.online/sv4/dangnhap.php';
+        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+
+        try {
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'username': u,
+                    'password': p
+                })
+            });
+
+            // Đọc nội dung trả về từ server
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                // NẾU TRẢ VỀ SUCCESS
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành Công!',
+                    text: 'Đăng nhập vào game thành công.',
+                    confirmButtonColor: '#1e7ee8'
+                });
+            } else {
+                // NẾU TRẢ VỀ THẤT BẠI (Sai pass, tên đăng nhập...)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Thất Bại',
+                    text: 'Tài khoản hoặc mật khẩu không đúng!',
+                    confirmButtonColor: '#d33'
+                });
+            }
+        } catch (error) {
+            console.error('Lỗi chi tiết:', error);
+            // Trường hợp này xảy ra nếu Proxy bị sập hoặc API bên kia chặn Proxy
+            Swal.fire({
+                icon: 'warning',
+                title: 'Hệ thống bận',
+                text: 'Không thể đọc dữ liệu từ máy chủ game lúc này.',
+            });
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'ĐĂNG NHẬP NGAY';
+        }
+    }
+</script>
 
 </body>
 </html>
