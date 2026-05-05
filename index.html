@@ -3,91 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập Ngọc Rồng</title>
+    <title>Ngọc Rồng Online - Đăng Nhập & Đăng Ký</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #04142b; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .box { background: rgba(10, 79, 163, 0.15); border: 1px solid #4db8ff; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 25px rgba(77, 184, 255, 0.2); }
-        h2 { color: #4db8ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; background: rgba(0, 0, 0, 0.4); border: 1px solid #4db8ff; border-radius: 10px; color: white; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: #fff; box-shadow: 0 0 10px #4db8ff; }
-        button { width: 100%; padding: 15px; background: linear-gradient(90deg, #0a4fa3, #1e7ee8); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 126, 232, 0.4); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        :root {
+            --glass-bg: rgba(10, 79, 163, 0.2);
+            --glass-border: #4db8ff;
+            --blue-glow: rgba(77, 184, 255, 0.4);
+            --primary-gradient: linear-gradient(135deg, #0a4fa3, #1e7ee8);
+            --orange-gradient: linear-gradient(135deg, #e65100, #ff6d00);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #04142b; color: #cde4ff; margin: 0; padding: 20px;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+
+        .box {
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 40px; max-width: 400px; width: 100%;
+            box-shadow: 0 0 30px var(--blue-glow); text-align: center;
+        }
+
+        h2 { margin-bottom: 25px; color: #4db8ff; text-transform: uppercase; letter-spacing: 2px; }
+
+        .form-group { text-align: left; margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #90caf9; }
+
+        input {
+            width: 100%; padding: 14px;
+            background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border);
+            border-radius: 8px; color: white; box-sizing: border-box; outline: none; transition: 0.3s;
+        }
+
+        input:focus { box-shadow: 0 0 10px var(--blue-glow); border-color: #fff; }
+
+        button {
+            width: 100%; padding: 15px; color: white; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+
+        .btn-login { background: var(--primary-gradient); }
+        .btn-reg-trigger { background: transparent; border: 1px solid #ff6d00; color: #ff6d00; margin-top: 20px; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center;
+            z-index: 1000; backdrop-filter: blur(5px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #0a1f3d; border: 1px solid #ff6d00; border-radius: 16px; padding: 30px;
+            width: 90%; max-width: 380px; position: relative;
+        }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-submit { flex: 2; background: var(--orange-gradient); }
+        .btn-cancel { flex: 1; background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
+<!-- FORM ĐĂNG NHẬP CHÍNH -->
 <div class="box">
     <h2>🔑 ĐĂNG NHẬP</h2>
-    <div id="loginForm">
-        <input type="text" id="username" placeholder="Tên đăng nhập" autocomplete="off">
-        <input type="password" id="password" placeholder="Mật khẩu">
-        <button type="button" onclick="handleLogin()" id="btnSubmit">ĐĂNG NHẬP NGAY</button>
+    <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="l_user" placeholder="Nhập tài khoản...">
+    </div>
+    <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" id="l_pass" placeholder="Nhập mật khẩu...">
+    </div>
+    <button type="button" class="btn-login" onclick="handleLogin()">ĐĂNG NHẬP</button>
+    <button type="button" class="btn-reg-trigger" onclick="openModal()">✨ CHƯA CÓ TÀI KHOẢN? ĐĂNG KÝ</button>
+</div>
+
+<!-- MODAL ĐĂNG KÝ -->
+<div class="modal-overlay" id="registerModal">
+    <div class="modal-box">
+        <button type="button" class="modal-close" onclick="closeModal()">✕</button>
+        <h2 style="color: #ff6d00; font-size: 1.5rem;">✨ ĐĂNG KÝ</h2>
+
+        <div class="form-group">
+            <label>Tên tài khoản</label>
+            <input type="text" id="r_user" placeholder="Tên đăng nhập...">
+        </div>
+
+        <div class="form-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="r_pass" placeholder="Mật khẩu...">
+        </div>
+
+        <div class="form-group">
+            <label>Gmail</label>
+            <div style="display:flex; align-items:center">
+                <input type="text" id="r_gmail" placeholder="Nhập tên gmail..." style="flex:1; border-radius:8px 0 0 8px">
+                <span style="padding:13px 12px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); border-left:none; border-radius:0 8px 8px 0; color:#90caf9; font-size:0.85rem;">@gmail.com</span>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-submit" onclick="handleRegister()">ĐĂNG KÝ NGAY</button>
+            <button type="button" class="btn-cancel" onclick="closeModal()">HỦY</button>
+        </div>
     </div>
 </div>
 
 <script>
-    async function handleLogin() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        const btn = document.getElementById('btnSubmit');
+    const PROXY = 'https://corsproxy.io/?';
+    const API_LOGIN = 'https://nro1999.online/sv4/dangnhap.php';
+    const API_REG = 'https://nro1999.online/sv4/dangky.php';
 
-        if (!u || !p) {
-            Swal.fire('Lỗi', 'Vui lòng nhập đủ tài khoản, mật khẩu!', 'error');
+    function openModal() { document.getElementById('registerModal').classList.add('show'); }
+    function closeModal() { document.getElementById('registerModal').classList.remove('show'); }
+
+    async function handleLogin() {
+        const u = document.getElementById('l_user').value.trim();
+        const p = document.getElementById('l_pass').value.trim();
+
+        if (u === "" || p === "") {
+            Swal.fire('Lỗi', 'Vui lòng nhập đầy đủ thông tin!', 'error');
             return;
         }
 
-        btn.disabled = true;
-        btn.innerText = 'ĐANG XỬ LÝ...';
-
-        // Đây là "Tiến trình ẩn" lách qua lỗi CORS bằng corsproxy.io
-        const targetUrl = 'https://nro1999.online/sv4/dangnhap.php';
-        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+        Swal.showLoading();
 
         try {
-            const response = await fetch(proxyUrl, {
+            const res = await fetch(PROXY + encodeURIComponent(API_LOGIN), {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    'username': u,
-                    'password': p
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username: u, password: p })
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                Swal.fire('Thành Công', 'Đăng nhập thành công!', 'success');
+            } else {
+                Swal.fire('Thất Bại', data.message || 'Sai tài khoản hoặc mật khẩu!', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Lỗi', 'Không thể kết nối API!', 'warning');
+        }
+    }
+
+    async function handleRegister() {
+        const u = document.getElementById('r_user').value.trim();
+        const p = document.getElementById('r_pass').value.trim();
+        const g = document.getElementById('r_gmail').value.trim();
+
+        if (u === "" || p === "" || g === "") {
+            Swal.fire('Lỗi', 'Vui lòng điền đủ thông tin đăng ký!', 'error');
+            return;
+        }
+
+        Swal.showLoading();
+
+        try {
+            const res = await fetch(PROXY + encodeURIComponent(API_REG), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ 
+                    username: u, 
+                    password: p, 
+                    email: g + '@gmail.com' // Đổi key từ 'gmail' sang 'email' để khớp backend
                 })
             });
+            const data = await res.json();
 
-            // Đọc nội dung trả về từ server
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                // NẾU TRẢ VỀ SUCCESS
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành Công!',
-                    text: 'Đăng nhập vào game thành công.',
-                    confirmButtonColor: '#1e7ee8'
-                });
+            if(data.status === 'success') {
+                Swal.fire('Chúc Mừng', 'Đăng ký thành công! Quay lại đăng nhập nhé.', 'success').then(closeModal);
             } else {
-                // NẾU TRẢ VỀ THẤT BẠI (Sai pass, tên đăng nhập...)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Thất Bại',
-                    text: 'Tài khoản hoặc mật khẩu không đúng!',
-                    confirmButtonColor: '#d33'
-                });
+                Swal.fire('Lỗi', data.message || 'Tài khoản đã tồn tại!', 'error');
             }
-        } catch (error) {
-            console.error('Lỗi chi tiết:', error);
-            // Trường hợp này xảy ra nếu Proxy bị sập hoặc API bên kia chặn Proxy
-            Swal.fire({
-                icon: 'warning',
-                title: 'Hệ thống bận',
-                text: 'Không thể đọc dữ liệu từ máy chủ game lúc này.',
-            });
-        } finally {
-            btn.disabled = false;
-            btn.innerText = 'ĐĂNG NHẬP NGAY';
+        } catch (e) {
+            Swal.fire('Lỗi', 'Server game đang bận hoặc lỗi API!', 'warning');
         }
     }
 </script>
